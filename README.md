@@ -12,6 +12,7 @@ You will be able to:
 * List the different methods of feature selection
 * Identify when it is appropriate to use certain methods of feature selection
 * Use feature selection on a dataset
+* Demonstrate how different methods of feature selection are performed
 
 ### Purpose of Feature Selection
 
@@ -44,9 +45,6 @@ Wrapper methods determine the optimal subset of features using different combina
 
 An example of a wrapper method in linear regression is Recursive Feature Elimination, which starts with all features included in a model and removes them one by one. After the model has had a feature removed, whichever subset of features resulted in the least statistically significant deterioration of the model fit will indicate which omitted feature is the least useful for prediction. The opposite of this process is Forward Selection, which undergoes the same process in reverse. It begins with a single feature and continues to add the next feature that improves model performance the most. 
 
-Let's see a wrapper method in action on the diabetes dataset built into scikit-learn. The dataset contains the independent variables age, sex, body mass index, blood pressure, and 6 different blood serum measurements. The target variable represents a quantitative measurement progression of diabetes from one year after a baseline observation. 
-
-
 #### Filter Methods   
 Filter methods are feature selection methods carried out as a pre-processing step before even running a model. Filter methods work by observing characteristics of how variables are related to one another. Depending on the model that is being used, different metrics are used to determine which features will get eliminated and which will remain. Typically, filter methods will return a "feature ranking" that will tell you how features are ordered in relation to one another. They will remove the variables that are considered redundant. It's up to the data scientist to determine the cut-off point at which they will keep the top n features, and this n is usually determined through cross validation.
 
@@ -60,7 +58,11 @@ Embedded methods are feature selection methods that are included within the actu
 
 <img src = "./images/embedded.png">
 
-### Creating New Features
+Let's see a wrapper method in action on the diabetes dataset built into scikit-learn. The dataset contains the independent variables age, sex, body mass index, blood pressure, and 6 different blood serum measurements. The target variable represents a quantitative measurement progression of diabetes from one year after a baseline observation. 
+
+### Processing the Data
+
+To begin with, we are going to preprocess the data to ensure that each one of the columns
 
 
 ```python
@@ -70,122 +72,11 @@ from matplotlib import pyplot as plt
 from sklearn import datasets, linear_model
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
+from sklearn.linear_model import LinearRegression
 
-# reading in the diabetes dataset built into sklearn
 df = pd.read_csv('diabetes.tab.txt', sep='\t', lineterminator='\n')
-df.head()
+
 ```
-
-
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>AGE</th>
-      <th>SEX</th>
-      <th>BMI</th>
-      <th>BP</th>
-      <th>S1</th>
-      <th>S2</th>
-      <th>S3</th>
-      <th>S4</th>
-      <th>S5</th>
-      <th>S6</th>
-      <th>Y</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>59</td>
-      <td>2</td>
-      <td>32.1</td>
-      <td>101.0</td>
-      <td>157</td>
-      <td>93.2</td>
-      <td>38.0</td>
-      <td>4.0</td>
-      <td>4.8598</td>
-      <td>87</td>
-      <td>151</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>48</td>
-      <td>1</td>
-      <td>21.6</td>
-      <td>87.0</td>
-      <td>183</td>
-      <td>103.2</td>
-      <td>70.0</td>
-      <td>3.0</td>
-      <td>3.8918</td>
-      <td>69</td>
-      <td>75</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>72</td>
-      <td>2</td>
-      <td>30.5</td>
-      <td>93.0</td>
-      <td>156</td>
-      <td>93.6</td>
-      <td>41.0</td>
-      <td>4.0</td>
-      <td>4.6728</td>
-      <td>85</td>
-      <td>141</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>24</td>
-      <td>1</td>
-      <td>25.3</td>
-      <td>84.0</td>
-      <td>198</td>
-      <td>131.4</td>
-      <td>40.0</td>
-      <td>5.0</td>
-      <td>4.8903</td>
-      <td>89</td>
-      <td>206</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>50</td>
-      <td>1</td>
-      <td>23.0</td>
-      <td>101.0</td>
-      <td>192</td>
-      <td>125.4</td>
-      <td>52.0</td>
-      <td>4.0</td>
-      <td>4.2905</td>
-      <td>80</td>
-      <td>135</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
 
 
 ```python
@@ -305,45 +196,48 @@ features.head()
 
 
 ```python
-target.head()
-```
-
-
-
-
-    0    151
-    1     75
-    2    141
-    3    206
-    4    135
-    Name: Y, dtype: int64
-
-
-
-
-```python
 from sklearn import preprocessing
 X_train, X_test, y_train, y_test = train_test_split(features, target, random_state=20,test_size=0.2)
 scaler = preprocessing.StandardScaler()
 
 ## scaling every feature except the binary column female
+
 scaler.fit(X_train.iloc[:,:-1])
 transformed_training_features = scaler.transform(X_train.iloc[:,:-1])
 transformed_testing_features = scaler.transform(X_test.iloc[:,:-1])
+
+X_train_transformed = pd.DataFrame(scaler.transform(X_train.iloc[:,:-1]), columns=X_train.columns[:-1], index=X_train.index)
+X_train_transformed['female'] = X_train['female']
+
+X_test_transformed = pd.DataFrame(scaler.transform(X_test.iloc[:,:-1]), columns=X_train.columns[:-1], index=X_test.index)
+X_test_transformed['female'] = X_test['female']
 ```
+
+Before we start subsetting features, we should see how well the model performs without performing any kind of transformations to the data.
 
 
 ```python
-X_train_transformed = np.column_stack((transformed_training_features,X_train['female']))
-X_test_transformed = np.column_stack((transformed_testing_features,X_test['female']))
+lm = LinearRegression()
+lm.fit(X_train_transformed,y_train)
+
+
+y_pred = lm.predict(X_test_transformed)
+print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_test,y_pred)))
+print('R^2 value', lm.score(X_test_transformed,y_test))
 ```
+
+    Root Mean Square Error 58.83589708889504
+    R^2 value 0.4179775463198647
+
+
+The model has not performed exceptionally well here, so we can try adding some additional features. Let's go ahead and add a polynomial degree of up to 3.
 
 
 ```python
 poly = preprocessing.PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
-features_64_train = pd.DataFrame(poly.fit_transform(X_train_transformed), columns=poly.get_feature_names(features.columns))
-features_64_test = pd.DataFrame(poly.transform(X_test_transformed), columns=poly.get_feature_names(features.columns))
-features_64_train.head()
+X_poly_train = pd.DataFrame(poly.fit_transform(X_train_transformed), columns=poly.get_feature_names(features.columns))
+X_poly_test = pd.DataFrame(poly.transform(X_test_transformed), columns=poly.get_feature_names(features.columns))
+X_poly_train.head()
 ```
 
 
@@ -518,6 +412,37 @@ features_64_train.head()
 
 
 
+As you can see, this has now created 285 total columns! You can imagine that this model will greatly overfit to the data. Let's try it out with our training and test set.
+
+
+```python
+def run_model(model,X_train,X_test,y_train,y_test):
+    
+    print('Training R^2 :',model.score(X_train,y_train))
+    y_pred_train = model.predict(X_train)
+    print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_train,y_pred_train)))
+    print('Testing R^2 :',model.score(X_test,y_test))
+    y_pred_test = model.predict(X_test)
+    print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_test,y_pred_test)))
+
+```
+
+
+```python
+lr_poly = LinearRegression()
+lr_poly.fit(X_poly_train,y_train)
+
+run_model(lr_poly,X_poly_train,X_poly_test,y_train,y_test)
+```
+
+    Training R^2 : 0.8911860273472961
+    Root Mean Square Error 25.32084354998492
+    Testing R^2 : -12.110251404504968
+    Root Mean Square Error 279.2402510921638
+
+
+Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The $R^{2}$ is an abysmal -12! It's time to get rid of some features to see if this improves the model.
+
 #### Filter Methods  
 Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about characteristics of our data. To begin with, let's use a simple variance threshold to eliminate those features with a low variance.
 
@@ -528,61 +453,70 @@ Let's begin by trying out some filter methods for feature selection. The benefit
 ```python
 from sklearn.feature_selection import VarianceThreshold
 
-selector = VarianceThreshold(threshold = 1)
-selector.fit(features_64_train)
+threshold_ranges = np.linspace(0,5,num=6)
+selector = VarianceThreshold(threshold = 5)
+selector.fit(X_poly_train)
 ```
 
 
 
 
-    VarianceThreshold(threshold=1)
+    VarianceThreshold(threshold=5)
 
-
-
-Let's see how many features that eliminated.
-
-
-```python
-print(np.sum(selector.get_support()))
-features_64_train[selector.get_support()]
-```
-
-    186
-
-
-
-    ---------------------------------------------------------------------------
-
-    ValueError                                Traceback (most recent call last)
-
-    <ipython-input-74-76f7b08d104e> in <module>()
-          1 print(np.sum(selector.get_support()))
-    ----> 2 features_64_train[selector.get_support()]
-    
-
-    ~/anaconda3/lib/python3.6/site-packages/pandas/core/frame.py in __getitem__(self, key)
-       2677         if isinstance(key, (Series, np.ndarray, Index, list)):
-       2678             # either boolean or fancy integer index
-    -> 2679             return self._getitem_array(key)
-       2680         elif isinstance(key, DataFrame):
-       2681             return self._getitem_frame(key)
-
-
-    ~/anaconda3/lib/python3.6/site-packages/pandas/core/frame.py in _getitem_array(self, key)
-       2714             elif len(key) != len(self.index):
-       2715                 raise ValueError('Item wrong length %d instead of %d.' %
-    -> 2716                                  (len(key), len(self.index)))
-       2717             # check_bool_indexer will throw exception if Series key cannot
-       2718             # be reindexed to match DataFrame rows
-
-
-    ValueError: Item wrong length 285 instead of 353.
 
 
 
 ```python
-features_64_train.
+for thresh in threshold_ranges:
+    print(thresh)
+    selector = VarianceThreshold(thresh)
+    reduced_feature_train = selector.fit_transform(X_poly_train)
+    reduced_feature_test = selector.transform(X_poly_test)
+    lr = LinearRegression()
+    lr.fit(reduced_feature_train,y_train)
+    run_model(lr,reduced_feature_train,reduced_feature_test,y_train,y_test)
+    print('--------------------------------------------------------------------')
 ```
+
+    0.0
+    Training R^2 : 0.8911860273471994
+    Root Mean Square Error 25.32084354999617
+    Testing R^2 : -12.110251404063117
+    Root Mean Square Error 279.24025108745826
+    --------------------------------------------------------------------
+    1.0
+    Training R^2 : 0.7599467559542592
+    Root Mean Square Error 37.60881299509217
+    Testing R^2 : -0.8374881977001354
+    Root Mean Square Error 104.54055202273267
+    --------------------------------------------------------------------
+    2.0
+    Training R^2 : 0.6165364010941058
+    Root Mean Square Error 47.53329371052904
+    Testing R^2 : 0.13147157040839996
+    Root Mean Square Error 71.87279420884137
+    --------------------------------------------------------------------
+    3.0
+    Training R^2 : 0.5396785340715374
+    Root Mean Square Error 52.07945737747569
+    Testing R^2 : 0.14176747185284266
+    Root Mean Square Error 71.44551898683407
+    --------------------------------------------------------------------
+    4.0
+    Training R^2 : 0.49906158604029605
+    Root Mean Square Error 54.328536354398594
+    Testing R^2 : 0.20744165818270344
+    Root Mean Square Error 68.65752292574793
+    --------------------------------------------------------------------
+    5.0
+    Training R^2 : 0.45978340220443226
+    Root Mean Square Error 56.4182743723726
+    Testing R^2 : 0.2082443514205432
+    Root Mean Square Error 68.62274637526733
+    --------------------------------------------------------------------
+
+
+Hmmm, that did not seem to eliminate the features very well.
 
 ##### Wrapper Methods
 
@@ -593,7 +527,7 @@ Now let's use RFE to try out a wrapper method
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import LinearRegression
 lm = LinearRegression()
-rfe = RFE(lm,n_features_to_select=15)
+rfe = RFE(lm,n_features_to_select=10)
 rfe.fit(features_64_train,y_train)
 ```
 
@@ -601,33 +535,89 @@ rfe.fit(features_64_train,y_train)
 
 
     RFE(estimator=LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False),
-      n_features_to_select=15, step=1, verbose=0)
+      n_features_to_select=10, step=1, verbose=0)
 
 
 
 
 ```python
-rfe.score(features_64_train,y_train)
+lm2 = LinearRegression()
+lm2.fit(features_64_train,y_train)
+lm2.score(features_64_test,y_test)
 ```
 
 
 
 
-    0.4371729585878992
+    0.36886944442517255
 
 
 
 
 ```python
-rfe.estimator_
+rfe.score(features_64_test,y_test)
 ```
 
 
 
 
-    LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False)
+    0.3741776137528098
 
 
+
+So with Recursive Feature Elimination, we went from an $R^2$ score of -12 (which is extremely bad!) to 0.39, which is still not that great.
+
+#### Embedded Methods  
+To compare to our other methods, we will use lasso
+
+
+```python
+from sklearn.linear_model import LassoCV
+
+lasso = LassoCV(max_iter=100000)
+
+lasso.fit(X_train_transformed,y_train)
+```
+
+
+
+
+    LassoCV(alphas=None, copy_X=True, cv=None, eps=0.001, fit_intercept=True,
+        max_iter=100000, n_alphas=100, n_jobs=1, normalize=False,
+        positive=False, precompute='auto', random_state=None,
+        selection='cyclic', tol=0.0001, verbose=False)
+
+
+
+
+```python
+lasso.score(X_test_transformed,y_test)
+
+ru
+```
+
+
+
+
+    0.42907158065336737
+
+
+
+
+```python
+lasso = LassoCV(max_iter=100000)
+
+lasso.fit(X_train_transformed,y_train)
+run_model(lasso,X_train_transformed,X_test_transformed,y_train,y_test)
+```
+
+    Training R^2 : 0.5293615658171946
+    Root Mean Square Error 52.65983961601151
+    Testing R^2 : 0.42907158065336737
+    Root Mean Square Error 58.27245842836699
+
+
+As we can see, the regularization had minimal effect on the performance of the model.
 
 Sources: [Feature Selection](https://www.researchgate.net/profile/Amparo_Alonso-Betanzos/publication/221252792_Filter_Methods_for_Feature_Selection_-_A_Comparative_Study/links/543fd9ec0cf21227a11b8e05.pdf)
 
