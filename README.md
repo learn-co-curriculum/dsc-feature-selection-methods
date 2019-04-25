@@ -58,7 +58,9 @@ Embedded methods are feature selection methods that are included within the actu
 
 <img src = "./images/embedded.png">
 
-Let's see a wrapper method in action on the diabetes dataset built into scikit-learn. The dataset contains the independent variables age, sex, body mass index, blood pressure, and 6 different blood serum measurements. The target variable represents a quantitative measurement progression of diabetes from one year after a baseline observation. 
+## Feature Selection in Action
+
+Now, we're going to review the process behind performing feature selection with a dataset pertaining to diabetes. The dataset contains the independent variables age, sex, body mass index, blood pressure, and 6 different blood serum measurements. The target variable represents a quantitative measurement progression of diabetes from one year after a baseline observation. With feature selection, our goal is to find a model that is able to maintain high accuracy while not overfitting to noise.
 
 ### Processing the Data
 
@@ -66,6 +68,7 @@ To begin with, we are going to preprocess the data to ensure that each one of th
 
 
 ```python
+# importing necessary libraries
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -74,6 +77,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.linear_model import LinearRegression
 
+# reading in the data
 df = pd.read_csv('diabetes.tab.txt', sep='\t', lineterminator='\n')
 
 ```
@@ -194,6 +198,8 @@ features.head()
 
 
 
+For both regularization (an embedded method) and various filters, it is important to standardize the data. This next cell is fitting the data to a StandardScaler from sklearn.
+
 
 ```python
 from sklearn import preprocessing
@@ -201,7 +207,6 @@ X_train, X_test, y_train, y_test = train_test_split(features, target, random_sta
 scaler = preprocessing.StandardScaler()
 
 ## scaling every feature except the binary column female
-
 scaler.fit(X_train.iloc[:,:-1])
 transformed_training_features = scaler.transform(X_train.iloc[:,:-1])
 transformed_testing_features = scaler.transform(X_test.iloc[:,:-1])
@@ -213,28 +218,54 @@ X_test_transformed = pd.DataFrame(scaler.transform(X_test.iloc[:,:-1]), columns=
 X_test_transformed['female'] = X_test['female']
 ```
 
-Before we start subsetting features, we should see how well the model performs without performing any kind of transformations to the data.
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/sklearn/preprocessing/data.py:645: DataConversionWarning: Data with input dtype int64, float64 were all converted to float64 by StandardScaler.
+      return self.partial_fit(X, y)
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:7: DataConversionWarning: Data with input dtype int64, float64 were all converted to float64 by StandardScaler.
+      import sys
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:8: DataConversionWarning: Data with input dtype int64, float64 were all converted to float64 by StandardScaler.
+      
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:10: DataConversionWarning: Data with input dtype int64, float64 were all converted to float64 by StandardScaler.
+      # Remove the CWD from sys.path while we load stuff.
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/ipykernel_launcher.py:13: DataConversionWarning: Data with input dtype int64, float64 were all converted to float64 by StandardScaler.
+      del sys.path[0]
+
+
+Before we start subsetting features, we should see how well the model performs without performing any kind of interactions added or feature selection performed. Because we are going to be running many different models here, we have created a function to ensure that we are remaining D.R.Y. with our code.
+
+
+```python
+def run_model(model,X_train,X_test,y_train,y_test):
+    
+    print('Training R^2 :',model.score(X_train,y_train))
+    y_pred_train = model.predict(X_train)
+    print('Training Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_train,y_pred_train)))
+    print('\n----------------\n')
+    print('Testing R^2 :',model.score(X_test,y_test))
+    y_pred_test = model.predict(X_test)
+    print('Testing Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_test,y_pred_test)))
+```
 
 
 ```python
 lm = LinearRegression()
 lm.fit(X_train_transformed,y_train)
-
-
-y_pred = lm.predict(X_test_transformed)
-print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_test,y_pred)))
-print('R^2 value', lm.score(X_test_transformed,y_test))
+run_model(lm,X_train_transformed,X_test_transformed,y_train,y_test)
 ```
 
-    Root Mean Square Error 58.83589708889504
-    R^2 value 0.4179775463198647
+    Training R^2 : 0.5371947100976313
+    Training Root Mean Square Error 52.21977472848369
+    
+    ----------------
+    
+    Testing R^2 : 0.4179775463198647
+    Testing Root Mean Square Error 58.83589708889504
 
 
 The model has not performed exceptionally well here, so we can try adding some additional features. Let's go ahead and add a polynomial degree of up to 3.
 
 
 ```python
-poly = preprocessing.PolynomialFeatures(degree=3, interaction_only=False, include_bias=False)
+poly = preprocessing.PolynomialFeatures(degree=2, interaction_only=False, include_bias=False)
 X_poly_train = pd.DataFrame(poly.fit_transform(X_train_transformed), columns=poly.get_feature_names(features.columns))
 X_poly_test = pd.DataFrame(poly.transform(X_test_transformed), columns=poly.get_feature_names(features.columns))
 X_poly_train.head()
@@ -272,16 +303,16 @@ X_poly_train.head()
       <th>S6</th>
       <th>female</th>
       <th>...</th>
-      <th>S5^3</th>
-      <th>S5^2 S6</th>
-      <th>S5^2 female</th>
-      <th>S5 S6^2</th>
-      <th>S5 S6 female</th>
-      <th>S5 female^2</th>
-      <th>S6^3</th>
-      <th>S6^2 female</th>
-      <th>S6 female^2</th>
-      <th>female^3</th>
+      <th>S4^2</th>
+      <th>S4 S5</th>
+      <th>S4 S6</th>
+      <th>S4 female</th>
+      <th>S5^2</th>
+      <th>S5 S6</th>
+      <th>S5 female</th>
+      <th>S6^2</th>
+      <th>S6 female</th>
+      <th>female^2</th>
     </tr>
   </thead>
   <tbody>
@@ -298,14 +329,14 @@ X_poly_train.head()
       <td>-1.006077</td>
       <td>0.0</td>
       <td>...</td>
-      <td>-1.314929</td>
-      <td>-1.207535</td>
-      <td>0.000000</td>
-      <td>-1.108911</td>
-      <td>0.000000</td>
+      <td>0.727322</td>
+      <td>0.934324</td>
+      <td>0.858015</td>
       <td>-0.000000</td>
-      <td>-1.018343</td>
-      <td>0.000000</td>
+      <td>1.200240</td>
+      <td>1.102213</td>
+      <td>-0.000000</td>
+      <td>1.012192</td>
       <td>-0.000000</td>
       <td>0.0</td>
     </tr>
@@ -322,13 +353,13 @@ X_poly_train.head()
       <td>-0.831901</td>
       <td>1.0</td>
       <td>...</td>
-      <td>0.160442</td>
-      <td>-0.245631</td>
+      <td>0.006998</td>
+      <td>-0.045455</td>
+      <td>0.069589</td>
+      <td>-0.083651</td>
       <td>0.295264</td>
-      <td>0.376053</td>
       <td>-0.452040</td>
       <td>0.543382</td>
-      <td>-0.575725</td>
       <td>0.692060</td>
       <td>-0.831901</td>
       <td>1.0</td>
@@ -346,13 +377,13 @@ X_poly_train.head()
       <td>1.519478</td>
       <td>1.0</td>
       <td>...</td>
-      <td>0.213315</td>
-      <td>0.542470</td>
+      <td>2.116182</td>
+      <td>0.869195</td>
+      <td>2.210400</td>
+      <td>1.454710</td>
       <td>0.357011</td>
-      <td>1.379524</td>
       <td>0.907894</td>
       <td>0.597504</td>
-      <td>3.508190</td>
       <td>2.308813</td>
       <td>1.519478</td>
       <td>1.0</td>
@@ -370,14 +401,14 @@ X_poly_train.head()
       <td>-0.918989</td>
       <td>0.0</td>
       <td>...</td>
-      <td>-0.504494</td>
-      <td>-0.582390</td>
-      <td>0.000000</td>
-      <td>-0.672315</td>
-      <td>0.000000</td>
+      <td>2.630925</td>
+      <td>1.291237</td>
+      <td>1.490612</td>
       <td>-0.000000</td>
-      <td>-0.776124</td>
-      <td>0.000000</td>
+      <td>0.633729</td>
+      <td>0.731581</td>
+      <td>-0.000000</td>
+      <td>0.844541</td>
       <td>-0.000000</td>
       <td>0.0</td>
     </tr>
@@ -394,38 +425,25 @@ X_poly_train.head()
       <td>0.648597</td>
       <td>1.0</td>
       <td>...</td>
-      <td>-0.912957</td>
-      <td>0.610391</td>
+      <td>0.727322</td>
+      <td>0.827333</td>
+      <td>-0.553144</td>
+      <td>-0.852832</td>
       <td>0.941095</td>
-      <td>-0.408100</td>
       <td>-0.629204</td>
       <td>-0.970101</td>
-      <td>0.272850</td>
       <td>0.420678</td>
       <td>0.648597</td>
       <td>1.0</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 285 columns</p>
+<p>5 rows × 65 columns</p>
 </div>
 
 
 
 As you can see, this has now created 285 total columns! You can imagine that this model will greatly overfit to the data. Let's try it out with our training and test set.
-
-
-```python
-def run_model(model,X_train,X_test,y_train,y_test):
-    
-    print('Training R^2 :',model.score(X_train,y_train))
-    y_pred_train = model.predict(X_train)
-    print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_train,y_pred_train)))
-    print('Testing R^2 :',model.score(X_test,y_test))
-    y_pred_test = model.predict(X_test)
-    print('Root Mean Square Error',np.sqrt(metrics.mean_squared_error(y_test,y_pred_test)))
-
-```
 
 
 ```python
@@ -435,38 +453,26 @@ lr_poly.fit(X_poly_train,y_train)
 run_model(lr_poly,X_poly_train,X_poly_test,y_train,y_test)
 ```
 
-    Training R^2 : 0.8911860273472961
-    Root Mean Square Error 25.32084354998492
-    Testing R^2 : -12.110251404504968
-    Root Mean Square Error 279.2402510921638
+    Training R^2 : 0.6237424326763866
+    Training Root Mean Square Error 47.08455372329229
+    
+    ----------------
+    
+    Testing R^2 : 0.36886944442517255
+    Testing Root Mean Square Error 61.26777562691537
 
 
 Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The $R^{2}$ is an abysmal -12! It's time to get rid of some features to see if this improves the model.
 
-#### Filter Methods  
+### Filter Methods  
 Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about characteristics of our data. To begin with, let's use a simple variance threshold to eliminate those features with a low variance.
-
-
-
 
 
 ```python
 from sklearn.feature_selection import VarianceThreshold
 
-threshold_ranges = np.linspace(0,5,num=6)
-selector = VarianceThreshold(threshold = 5)
-selector.fit(X_poly_train)
-```
+threshold_ranges = np.linspace(0,2,num=6)
 
-
-
-
-    VarianceThreshold(threshold=5)
-
-
-
-
-```python
 for thresh in threshold_ranges:
     print(thresh)
     selector = VarianceThreshold(thresh)
@@ -479,44 +485,62 @@ for thresh in threshold_ranges:
 ```
 
     0.0
-    Training R^2 : 0.8911860273471994
-    Root Mean Square Error 25.32084354999617
-    Testing R^2 : -12.110251404063117
-    Root Mean Square Error 279.24025108745826
+    Training R^2 : 0.623742432676387
+    Training Root Mean Square Error 47.08455372329227
+    
+    ----------------
+    
+    Testing R^2 : 0.3688694444251692
+    Testing Root Mean Square Error 61.26777562691554
     --------------------------------------------------------------------
-    1.0
-    Training R^2 : 0.7599467559542592
-    Root Mean Square Error 37.60881299509217
-    Testing R^2 : -0.8374881977001354
-    Root Mean Square Error 104.54055202273267
+    0.4
+    Training R^2 : 0.6035018897144958
+    Training Root Mean Square Error 48.33440733222434
+    
+    ----------------
+    
+    Testing R^2 : 0.3580801962858057
+    Testing Root Mean Square Error 61.789246194094346
+    --------------------------------------------------------------------
+    0.8
+    Training R^2 : 0.5894227238666292
+    Training Root Mean Square Error 49.18506972762005
+    
+    ----------------
+    
+    Testing R^2 : 0.36401696030350406
+    Testing Root Mean Square Error 61.502855071460544
+    --------------------------------------------------------------------
+    1.2000000000000002
+    Training R^2 : 0.1991536009695497
+    Training Root Mean Square Error 68.69267841228015
+    
+    ----------------
+    
+    Testing R^2 : 0.036254917874099846
+    Testing Root Mean Square Error 75.71006122152009
+    --------------------------------------------------------------------
+    1.6
+    Training R^2 : 0.1719075561672746
+    Training Root Mean Square Error 69.8514213627012
+    
+    ----------------
+    
+    Testing R^2 : 0.09270595287961225
+    Testing Root Mean Square Error 73.45925856313264
     --------------------------------------------------------------------
     2.0
-    Training R^2 : 0.6165364010941058
-    Root Mean Square Error 47.53329371052904
-    Testing R^2 : 0.13147157040839996
-    Root Mean Square Error 71.87279420884137
-    --------------------------------------------------------------------
-    3.0
-    Training R^2 : 0.5396785340715374
-    Root Mean Square Error 52.07945737747569
-    Testing R^2 : 0.14176747185284266
-    Root Mean Square Error 71.44551898683407
-    --------------------------------------------------------------------
-    4.0
-    Training R^2 : 0.49906158604029605
-    Root Mean Square Error 54.328536354398594
-    Testing R^2 : 0.20744165818270344
-    Root Mean Square Error 68.65752292574793
-    --------------------------------------------------------------------
-    5.0
-    Training R^2 : 0.45978340220443226
-    Root Mean Square Error 56.4182743723726
-    Testing R^2 : 0.2082443514205432
-    Root Mean Square Error 68.62274637526733
+    Training R^2 : 0.06445844090783526
+    Training Root Mean Square Error 74.24502865009542
+    
+    ----------------
+    
+    Testing R^2 : 0.0420041242549255
+    Testing Root Mean Square Error 75.48389982682222
     --------------------------------------------------------------------
 
 
-Hmmm, that did not seem to eliminate the features very well.
+Hmmm, that did not seem to eliminate the features very well. It's better than the base polynomial, but it is not any better than some of the more complicated.
 
 ##### Wrapper Methods
 
@@ -528,15 +552,91 @@ from sklearn.feature_selection import RFE
 from sklearn.linear_model import LinearRegression
 lm = LinearRegression()
 rfe = RFE(lm,n_features_to_select=10)
-rfe.fit(features_64_train,y_train)
+X_rfe_train = rfe.fit_transform(X_poly_train,y_train)
 ```
 
 
+```python
+rfe.transform()
+```
 
 
-    RFE(estimator=LinearRegression(copy_X=True, fit_intercept=True, n_jobs=1, normalize=False),
-      n_features_to_select=10, step=1, verbose=0)
+```python
+num_features = [5,10,15,20,25,30,35]
+for num in num_features:
+    print(num)
+    rfe = RFE(lm,n_features_to_select=num)
+    X_rfe_train = rfe.fit_transform(X_poly_train,y_train)
+    lm = LinearRegression()
+    lm.fit(X_rfe_train,y_train)
+    X_rfe_test = rfe.transform(X_poly_test)
+    run_model(lm,X_rfe_train,X_rfe_test,y_train,y_test)
+    print('--------------------------------------------------------------------')
+```
 
+    5
+    Training R^2 : 0.36997305857181373
+    Training Root Mean Square Error 60.92778606921537
+    
+    ----------------
+    
+    Testing R^2 : 0.3796603748875783
+    Testing Root Mean Square Error 60.74174601907582
+    --------------------------------------------------------------------
+    10
+    Training R^2 : 0.37930327292162724
+    Training Root Mean Square Error 60.474956480110215
+    
+    ----------------
+    
+    Testing R^2 : 0.3741776137528098
+    Testing Root Mean Square Error 61.00958305774434
+    --------------------------------------------------------------------
+    15
+    Training R^2 : 0.3906851975747667
+    Training Root Mean Square Error 59.91791619721171
+    
+    ----------------
+    
+    Testing R^2 : 0.3303869894024011
+    Testing Root Mean Square Error 63.10800505117215
+    --------------------------------------------------------------------
+    20
+    Training R^2 : 0.5294417008168577
+    Training Root Mean Square Error 52.65535626364615
+    
+    ----------------
+    
+    Testing R^2 : 0.34709138632960856
+    Testing Root Mean Square Error 62.3158766526581
+    --------------------------------------------------------------------
+    25
+    Training R^2 : 0.5714290365285388
+    Training Root Mean Square Error 50.251289249443005
+    
+    ----------------
+    
+    Testing R^2 : 0.3729091394616636
+    Testing Root Mean Square Error 61.07138167200478
+    --------------------------------------------------------------------
+    30
+    Training R^2 : 0.5846204014670535
+    Training Root Mean Square Error 49.471880395445226
+    
+    ----------------
+    
+    Testing R^2 : 0.351291510914426
+    Testing Root Mean Square Error 62.11511598707191
+    --------------------------------------------------------------------
+    35
+    Training R^2 : 0.6018699178392128
+    Training Root Mean Square Error 48.433776523062164
+    
+    ----------------
+    
+    Testing R^2 : 0.3566070599938258
+    Testing Root Mean Square Error 61.86010537135698
+    --------------------------------------------------------------------
 
 
 
