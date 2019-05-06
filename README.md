@@ -464,7 +464,7 @@ run_model(lr_poly,X_poly_train,X_poly_test,y_train,y_test)
 
 Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The $R^{2}$ is an abysmal -12! It's time to get rid of some features to see if this improves the model.
 
-### Filter Methods  
+## Filter Methods  
 Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about characteristics of our data. To begin with, let's use a simple variance threshold to eliminate those features with a low variance.
 
 
@@ -542,48 +542,66 @@ for thresh in threshold_ranges:
 
 Hmmm, that did not seem to eliminate the features very well. It's better than the base polynomial, but it is not any better than some of the more complicated.
 
-##### Wrapper Methods
-
-Now let's use RFE to try out a wrapper method
-
 
 ```python
-from sklearn.feature_selection import RFE
-from sklearn.linear_model import LinearRegression
-lm = LinearRegression()
-rfe = RFE(lm,n_features_to_select=10)
-X_rfe_train = rfe.fit_transform(X_poly_train,y_train)
+from sklearn.feature_selection import f_regression, mutual_info_regression, SelectKBest
+selector = SelectKBest(score_func=f_regression)
+X_k_best_train = selector.fit_transform(X_poly_train, y_train)
+X_k_best_test= selector.transform(X_poly_test)
+lr = LinearRegression()
+lr.fit(X_k_best_train ,y_train)
+run_model(lr,X_k_best_train,X_k_best_test,y_train,y_test)
 ```
 
-
-```python
-rfe.transform()
-```
-
-
-```python
-num_features = [5,10,15,20,25,30,35]
-for num in num_features:
-    print(num)
-    rfe = RFE(lm,n_features_to_select=num)
-    X_rfe_train = rfe.fit_transform(X_poly_train,y_train)
-    lm = LinearRegression()
-    lm.fit(X_rfe_train,y_train)
-    X_rfe_test = rfe.transform(X_poly_test)
-    run_model(lm,X_rfe_train,X_rfe_test,y_train,y_test)
-    print('--------------------------------------------------------------------')
-```
-
-    5
-    Training R^2 : 0.36997305857181373
-    Training Root Mean Square Error 60.92778606921537
+    Training R^2 : 0.5229185029521006
+    Training Root Mean Square Error 53.01907218972858
     
     ----------------
     
-    Testing R^2 : 0.3796603748875783
-    Testing Root Mean Square Error 60.74174601907582
-    --------------------------------------------------------------------
-    10
+    Testing R^2 : 0.42499888052723567
+    Testing Root Mean Square Error 58.4799314703427
+
+
+
+```python
+selector = SelectKBest(score_func=mutual_info_regression)
+X_k_best_train = selector.fit_transform(X_poly_train, y_train)
+X_k_best_test= selector.transform(X_poly_test)
+lr = LinearRegression()
+lr.fit(X_k_best_train ,y_train)
+run_model(lr,X_k_best_train,X_k_best_test,y_train,y_test)
+```
+
+    /Users/forest.polchow/anaconda3/lib/python3.6/site-packages/sklearn/utils/validation.py:595: DataConversionWarning: Data with input dtype int64 was converted to float64 by the scale function.
+      warnings.warn(msg, DataConversionWarning)
+
+
+    Training R^2 : 0.4947424871473227
+    Training Root Mean Square Error 54.56224442488476
+    
+    ----------------
+    
+    Testing R^2 : 0.41157350315844643
+    Testing Root Mean Square Error 59.15869978194653
+
+
+## Wrapper Methods
+
+Now let's use Recursive Feature elimination (RFE) to try out a wrapper method. You'll notice that sci-kit learn has a built in RFECV function, which automatically determines the optimal number of features to keep when it is run based off the estimator that is passed into it. Here it is in action
+
+
+```python
+from sklearn.feature_selection import RFE, RFECV
+from sklearn.linear_model import LinearRegression
+
+rfe = RFECV(LinearRegression(),cv=5)
+X_rfe_train = rfe.fit_transform(X_poly_train,y_train)
+X_rfe_test = rfe.transform(X_poly_test)
+lm = LinearRegression().fit(X_rfe_train,y_train)
+run_model(lm,X_rfe_train,X_rfe_test,y_train,y_test)
+print ("The optimal number of features is: ",rfe.n_features_)
+```
+
     Training R^2 : 0.37930327292162724
     Training Root Mean Square Error 60.474956480110215
     
@@ -591,139 +609,63 @@ for num in num_features:
     
     Testing R^2 : 0.3741776137528098
     Testing Root Mean Square Error 61.00958305774434
-    --------------------------------------------------------------------
-    15
-    Training R^2 : 0.3906851975747667
-    Training Root Mean Square Error 59.91791619721171
-    
-    ----------------
-    
-    Testing R^2 : 0.3303869894024011
-    Testing Root Mean Square Error 63.10800505117215
-    --------------------------------------------------------------------
-    20
-    Training R^2 : 0.5294417008168577
-    Training Root Mean Square Error 52.65535626364615
-    
-    ----------------
-    
-    Testing R^2 : 0.34709138632960856
-    Testing Root Mean Square Error 62.3158766526581
-    --------------------------------------------------------------------
-    25
-    Training R^2 : 0.5714290365285388
-    Training Root Mean Square Error 50.251289249443005
-    
-    ----------------
-    
-    Testing R^2 : 0.3729091394616636
-    Testing Root Mean Square Error 61.07138167200478
-    --------------------------------------------------------------------
-    30
-    Training R^2 : 0.5846204014670535
-    Training Root Mean Square Error 49.471880395445226
-    
-    ----------------
-    
-    Testing R^2 : 0.351291510914426
-    Testing Root Mean Square Error 62.11511598707191
-    --------------------------------------------------------------------
-    35
-    Training R^2 : 0.6018699178392128
-    Training Root Mean Square Error 48.433776523062164
-    
-    ----------------
-    
-    Testing R^2 : 0.3566070599938258
-    Testing Root Mean Square Error 61.86010537135698
-    --------------------------------------------------------------------
+    The optimal number of features is:  10
 
+
+So with Recursive Feature Elimination, we went from an $R^2$ score of -12 (which is extremely bad!) to 0.37, which is still not that great. We
+
+## Embedded Methods  
+To compare to our other methods, we will use Lasso as the embedded method of feature selection. Luckily for us, sklearn has a builtin method to help us find the optimal features! It performs cross validation to determine the correct regularization parameter (how much to penalize our function).
 
 
 ```python
-lm2 = LinearRegression()
-lm2.fit(features_64_train,y_train)
-lm2.score(features_64_test,y_test)
+lasso=LassoCV(max_iter=100000,cv=5)
+lasso.fit(X_train_transformed,y_train)
+run_model(lasso,X_train_transformed,X_test_transformed,y_train,y_test)
+print("The optimal alpha for the Lasso Regression is: ",lasso.alpha_)
 ```
 
+    Training R^2 : 0.535154465585244
+    Training Root Mean Square Error 52.33475174961373
+    
+    ----------------
+    
+    Testing R^2 : 0.4267044232634857
+    Testing Root Mean Square Error 58.39313677555575
+    The optimal alpha for the Lasso Regression is:  0.23254844944953376
 
 
-
-    0.36886944442517255
-
-
-
-
-```python
-rfe.score(features_64_test,y_test)
-```
-
-
-
-
-    0.3741776137528098
-
-
-
-So with Recursive Feature Elimination, we went from an $R^2$ score of -12 (which is extremely bad!) to 0.39, which is still not that great.
-
-#### Embedded Methods  
-To compare to our other methods, we will use lasso
+Let's compare this to a model with all of the polynomial features included.
 
 
 ```python
 from sklearn.linear_model import LassoCV
+lasso2 = LassoCV(max_iter=100000,cv=5)
 
-lasso = LassoCV(max_iter=100000)
-
-lasso.fit(X_train_transformed,y_train)
+lasso2.fit(X_poly_train,y_train)
+run_model(lasso2,X_poly_train,X_poly_test,y_train,y_test)
+print("The optimal alpha for the Lasso Regression is: ",lasso2.alpha_)
 ```
 
+    Training R^2 : 0.5635320505309954
+    Training Root Mean Square Error 50.71214913665365
+    
+    ----------------
+    
+    Testing R^2 : 0.43065954589620015
+    Testing Root Mean Square Error 58.191363260874226
+    The optimal alpha for the Lasso Regression is:  1.7591437388826368
 
 
+As we can see, the regularization had minimal effect on the performance of the model, but it did improve the RMSE for the test set ever so slightly! There are no set steps someone should take in order to determine the optimal feature set. In fact, now there are automated machine learning pipelines that will determine the optimal subset of features for a given problem. One of the most important and often overlooked methods of feature selection is using domain knowledge about a given area to either eliminate features or create new ones.
 
-    LassoCV(alphas=None, copy_X=True, cv=None, eps=0.001, fit_intercept=True,
-        max_iter=100000, n_alphas=100, n_jobs=1, normalize=False,
-        positive=False, precompute='auto', random_state=None,
-        selection='cyclic', tol=0.0001, verbose=False)
+__Additional Resources__: 
 
-
-
-
-```python
-lasso.score(X_test_transformed,y_test)
-
-ru
-```
-
-
-
-
-    0.42907158065336737
-
-
-
-
-```python
-lasso = LassoCV(max_iter=100000)
-
-lasso.fit(X_train_transformed,y_train)
-run_model(lasso,X_train_transformed,X_test_transformed,y_train,y_test)
-```
-
-    Training R^2 : 0.5293615658171946
-    Root Mean Square Error 52.65983961601151
-    Testing R^2 : 0.42907158065336737
-    Root Mean Square Error 58.27245842836699
-
-
-As we can see, the regularization had minimal effect on the performance of the model.
-
-Sources: [Feature Selection](https://www.researchgate.net/profile/Amparo_Alonso-Betanzos/publication/221252792_Filter_Methods_for_Feature_Selection_-_A_Comparative_Study/links/543fd9ec0cf21227a11b8e05.pdf)
+[Feature Selection](https://www.researchgate.net/profile/Amparo_Alonso-Betanzos/publication/221252792_Filter_Methods_for_Feature_Selection_-_A_Comparative_Study/links/543fd9ec0cf21227a11b8e05.pdf)
 
 
 [An Introduction to Variable and Feature Selection](http://www.jmlr.org/papers/volume3/guyon03a/guyon03a.pdf)
 
 ## Summary
 
-This lesson formalized the different types of feature selection and introduced some new techniques to you. In the next lab, you'll get a chance to test out these feature selection methods to make the optimal model.
+This lesson formalized the different types of feature selection and introduced some new techniques to you. You learned about Filter Methods, Wrapper Methods, and Embedded Methods as well as advantages and disadvantages to both. In the next lab, you'll get a chance to test out these feature selection methods and everything else you've learned in this section to make the optimal model!
