@@ -39,7 +39,7 @@ One of the first steps a data scientist should take when trying to determine wha
 
 
 #### Wrapper Methods   
-Wrapper methods determine the optimal subset of features using different combinations of features to train models and then calculating performance. Every subset is used to train models and then evaluated on a test test. As you might imagine, wrapper methods can end up being very computationally intensive, however they are highly effective in determining the optimal subset. Because wrapper methods are so time-consuming, it becomes challenging to use them with large feature sets. 
+Wrapper methods determine the optimal subset of features using different combinations of features to train models and then calculating performance. Every subset is used to train models and then evaluated on a test set. As you might imagine, wrapper methods can end up being very computationally intensive, however they are highly effective in determining the optimal subset. Because wrapper methods are so time-consuming, it becomes challenging to use them with large feature sets. 
 
 <img src = "./images/wrapper.png">
 
@@ -50,7 +50,7 @@ Filter methods are feature selection methods carried out as a pre-processing ste
 
 <img src= "./images/filter.png">
 
-In the linear regression context, a common filter method is to eliminate features that are two highly correlated with one another. Another method is to use a variance threshold. This sets some threshold of required variance for features in order to include them in a model. The though process behind this is that if variables do not have a high variance, they will not change much and will therefore not have much impact on our dependent variable.
+In the linear regression context, a common filter method is to eliminate features that are too highly correlated with one another. Another method is to use a variance threshold. This sets some threshold of required variance for features in order to include them in a model. The thought process behind this is that if variables do not have a high variance, they will not change much and will therefore not have much impact on our dependent variable.
 
 
 #### Embedded methods   
@@ -64,7 +64,7 @@ Now, we're going to review the process behind performing feature selection with 
 
 ### Processing the Data
 
-To begin with, we are going to preprocess the data to ensure that each one of the columns
+To begin with, we are going to load the data and create a dummy variable for the variable SEX.
 
 
 ```python
@@ -443,7 +443,7 @@ X_poly_train.head()
 
 
 
-As you can see, this has now created 285 total columns! You can imagine that this model will greatly overfit to the data. Let's try it out with our training and test set.
+As you can see, this has now created 65 total columns! You can imagine that this model will greatly overfit to the data. Let's try it out with our training and test set.
 
 
 ```python
@@ -462,7 +462,7 @@ run_model(lr_poly,X_poly_train,X_poly_test,y_train,y_test)
     Testing Root Mean Square Error 61.26777562691537
 
 
-Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The $R^{2}$ is an abysmal -12! It's time to get rid of some features to see if this improves the model.
+Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The testing $R^{2}$ is worse than our simple model we fit previously! It's time to get rid of some features to see if this improves the model.
 
 ## Filter Methods  
 Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about characteristics of our data. To begin with, let's use a simple variance threshold to eliminate those features with a low variance.
@@ -587,7 +587,7 @@ run_model(lr,X_k_best_train,X_k_best_test,y_train,y_test)
 
 ## Wrapper Methods
 
-Now let's use Recursive Feature elimination (RFE) to try out a wrapper method. You'll notice that sci-kit learn has a built in RFECV function, which automatically determines the optimal number of features to keep when it is run based off the estimator that is passed into it. Here it is in action
+Now let's use Recursive Feature elimination (RFE) to try out a wrapper method. You'll notice that sci-kit learn has a built in RFECV function, which automatically determines the optimal number of features to keep when it is run based off the estimator that is passed into it. Here it is in action: 
 
 
 ```python
@@ -612,13 +612,14 @@ print ("The optimal number of features is: ",rfe.n_features_)
     The optimal number of features is:  10
 
 
-So with Recursive Feature Elimination, we went from an $R^2$ score of -12 (which is extremely bad!) to 0.37, which is still not that great. We
+With Recursive Feature Elimination, we went from an $R^2$ score of 0.368 to 0.374 (a tiny bit better). Let's see if we can improve upon these results even more by trying embedded methods.
 
 ## Embedded Methods  
 To compare to our other methods, we will use Lasso as the embedded method of feature selection. Luckily for us, sklearn has a builtin method to help us find the optimal features! It performs cross validation to determine the correct regularization parameter (how much to penalize our function).
 
 
 ```python
+from sklearn.linear_model import LassoCV
 lasso=LassoCV(max_iter=100000,cv=5)
 lasso.fit(X_train_transformed,y_train)
 run_model(lasso,X_train_transformed,X_test_transformed,y_train,y_test)
@@ -639,7 +640,6 @@ Let's compare this to a model with all of the polynomial features included.
 
 
 ```python
-from sklearn.linear_model import LassoCV
 lasso2 = LassoCV(max_iter=100000,cv=5)
 
 lasso2.fit(X_poly_train,y_train)
