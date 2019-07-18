@@ -41,14 +41,14 @@ One of the first steps a data scientist should take when trying to determine wha
 #### Wrapper Methods   
 Wrapper methods determine the optimal subset of features using different combinations of features to train models and then calculating performance. Every subset is used to train models and then evaluated on a test set. As you might imagine, wrapper methods can end up being very computationally intensive, however they are highly effective in determining the optimal subset. Because wrapper methods are so time-consuming, it becomes challenging to use them with large feature sets. 
 
-<img src = "./images/wrapper.png">
+<img src = "./images/new_wrapper.png">
 
 An example of a wrapper method in linear regression is Recursive Feature Elimination, which starts with all features included in a model and removes them one by one. After the model has had a feature removed, whichever subset of features resulted in the least statistically significant deterioration of the model fit will indicate which omitted feature is the least useful for prediction. The opposite of this process is Forward Selection, which undergoes the same process in reverse. It begins with a single feature and continues to add the next feature that improves model performance the most. 
 
 #### Filter Methods   
 Filter methods are feature selection methods carried out as a pre-processing step before even running a model. Filter methods work by observing characteristics of how variables are related to one another. Depending on the model that is being used, different metrics are used to determine which features will get eliminated and which will remain. Typically, filter methods will return a "feature ranking" that will tell you how features are ordered in relation to one another. They will remove the variables that are considered redundant. It's up to the data scientist to determine the cut-off point at which they will keep the top n features, and this n is usually determined through cross validation.
 
-<img src= "./images/filter.png">
+<img src= "./images/new_filter.png">
 
 In the linear regression context, a common filter method is to eliminate features that are too highly correlated with one another. Another method is to use a variance threshold. This sets some threshold of required variance for features in order to include them in a model. The thought process behind this is that if variables do not have a high variance, they will not change much and will therefore not have much impact on our dependent variable.
 
@@ -56,7 +56,7 @@ In the linear regression context, a common filter method is to eliminate feature
 #### Embedded methods   
 Embedded methods are feature selection methods that are included within the actual formulation of your machine learning algorithm. The most common kind of embedded method is regularization, in particular Lasso, because it has the capability of reducing your set of features automatically.
 
-<img src = "./images/embedded.png">
+<img src = "./images/new_embedded.png">
 
 ## Feature Selection in Action
 
