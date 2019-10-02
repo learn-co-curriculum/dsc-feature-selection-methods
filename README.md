@@ -18,14 +18,14 @@ You will be able to:
 
 Feature selection is the process by which you select a subset of features relevant for model construction. Feature Selection comes with several benefits, the most obvious being the improvement of a machine learning algorithm. Other benefits include:
 
-* Decrease in computational complexity: As the number of features are reduced in a model, the easier it will be to compute the parameters of your model. It will also mean a decrease in the amount of data storage required to maintain the features of your model.
+* Decrease in computational complexity: As the number of features is reduced in a model, the easier it will be to compute the parameters of your model. It will also mean a decrease in the amount of data storage required to maintain the features of your model.
 * Understanding your data: In the process of feature selection, you will gain more of an understanding of how features relate to one another.
 
 Now, let's look at the different types of feature selection and their advantages/disadvantages.
 
 ### Types of Feature Selection
 
-Like many things in data science there is not a clear and easy answer for deciding what features to include in a model. There are however, different strategies you can use to process in the correct manner.
+Like many things in data science, there is no clear and easy answer for deciding which features to include in a model. There are, however, different strategies you can use to process in the correct manner.
 
 
 * Domain Knowledge
@@ -35,18 +35,18 @@ Like many things in data science there is not a clear and easy answer for decidi
 
 
 #### Domain Knowledge   
-One of the first steps a data scientist should take when trying to determine what types of features might be useful is knowledge of the specific domain related to your dataset. This might mean reading past research papers that have explored similar topics or asking to key stakeholders to determine what the believe the most important factors are for predicting something.
+One of the first steps a data scientist should take when trying to determine what types of features might be useful is knowledge of the specific domain related to your dataset. This might mean reading past research papers that have explored similar topics or asking key stakeholders to determine what the believe the most important factors are for predicting something.
 
 
 #### Wrapper Methods   
-Wrapper methods determine the optimal subset of features using different combinations of features to train models and then calculating performance. Every subset is used to train models and then evaluated on a test set. As you might imagine, wrapper methods can end up being very computationally intensive, however they are highly effective in determining the optimal subset. Because wrapper methods are so time-consuming, it becomes challenging to use them with large feature sets. 
+Wrapper methods determine the optimal subset of features using different combinations of features to train models and then calculating performance. Every subset is used to train models and then evaluated on a test set. As you might imagine, wrapper methods can end up being very computationally intensive, however, they are highly effective in determining the optimal subset. Because wrapper methods are so time-consuming, it becomes challenging to use them with large feature sets. 
 
 <img src = "./images/new_wrapper.png">
 
 An example of a wrapper method in linear regression is Recursive Feature Elimination, which starts with all features included in a model and removes them one by one. After the model has had a feature removed, whichever subset of features resulted in the least statistically significant deterioration of the model fit will indicate which omitted feature is the least useful for prediction. The opposite of this process is Forward Selection, which undergoes the same process in reverse. It begins with a single feature and continues to add the next feature that improves model performance the most. 
 
 #### Filter Methods   
-Filter methods are feature selection methods carried out as a pre-processing step before even running a model. Filter methods work by observing characteristics of how variables are related to one another. Depending on the model that is being used, different metrics are used to determine which features will get eliminated and which will remain. Typically, filter methods will return a "feature ranking" that will tell you how features are ordered in relation to one another. They will remove the variables that are considered redundant. It's up to the data scientist to determine the cut-off point at which they will keep the top n features, and this n is usually determined through cross validation.
+Filter methods are feature selection methods carried out as a pre-processing step before even running a model. Filter methods work by observing characteristics of how variables are related to one another. Depending on the model that is being used, different metrics are used to determine which features will get eliminated and which will remain. Typically, filter methods will return a "feature ranking" that will tell you how features are ordered in relation to one another. They will remove the variables that are considered redundant. It's up to the data scientist to determine the cut-off point at which they will keep the top n features, and this n is usually determined through cross-validation.
 
 <img src= "./images/new_filter.png">
 
@@ -462,10 +462,10 @@ run_model(lr_poly,X_poly_train,X_poly_test,y_train,y_test)
     Testing Root Mean Square Error 61.26777562691537
 
 
-Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The testing $R^{2}$ is worse than our simple model we fit previously! It's time to get rid of some features to see if this improves the model.
+Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The testing $R^{2}$ is worse than the simple model we fit previously! It's time to get rid of some features to see if this improves the model.
 
 ## Filter Methods  
-Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about characteristics of our data. To begin with, let's use a simple variance threshold to eliminate those features with a low variance.
+Let's begin by trying out some filter methods for feature selection. The benefit of filter methods is that they can provide us with some useful visualizations for helping us gain an understanding about the characteristics of our data. To begin with, let's use a simple variance threshold to eliminate the features with low variance.
 
 
 ```python
