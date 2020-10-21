@@ -77,7 +77,7 @@ from sklearn import metrics
 from sklearn.linear_model import LinearRegression
 
 # Import the data
-df = pd.read_csv('diabetes.tab.txt', sep='\t', lineterminator='\n')
+df = pd.read_csv('diabetes.tab.txt', sep='\t')
 df.head()
 ```
 
@@ -117,7 +117,7 @@ df.head()
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>59</td>
       <td>2</td>
       <td>32.1</td>
@@ -131,7 +131,7 @@ df.head()
       <td>151</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>48</td>
       <td>1</td>
       <td>21.6</td>
@@ -145,7 +145,7 @@ df.head()
       <td>75</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>72</td>
       <td>2</td>
       <td>30.5</td>
@@ -159,7 +159,7 @@ df.head()
       <td>141</td>
     </tr>
     <tr>
-      <th>3</th>
+      <td>3</td>
       <td>24</td>
       <td>1</td>
       <td>25.3</td>
@@ -173,7 +173,7 @@ df.head()
       <td>206</td>
     </tr>
     <tr>
-      <th>4</th>
+      <td>4</td>
       <td>50</td>
       <td>1</td>
       <td>23.0</td>
@@ -242,7 +242,7 @@ features.head()
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>59</td>
       <td>32.1</td>
       <td>101.0</td>
@@ -255,7 +255,7 @@ features.head()
       <td>1</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>48</td>
       <td>21.6</td>
       <td>87.0</td>
@@ -268,7 +268,7 @@ features.head()
       <td>0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>72</td>
       <td>30.5</td>
       <td>93.0</td>
@@ -281,7 +281,7 @@ features.head()
       <td>1</td>
     </tr>
     <tr>
-      <th>3</th>
+      <td>3</td>
       <td>24</td>
       <td>25.3</td>
       <td>84.0</td>
@@ -294,7 +294,7 @@ features.head()
       <td>0</td>
     </tr>
     <tr>
-      <th>4</th>
+      <td>4</td>
       <td>50</td>
       <td>23.0</td>
       <td>101.0</td>
@@ -429,7 +429,7 @@ X_poly_train.head()
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>-0.433522</td>
       <td>-0.967597</td>
       <td>-2.067847</td>
@@ -453,7 +453,7 @@ X_poly_train.head()
       <td>0.0</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>1.117754</td>
       <td>-0.516691</td>
       <td>1.142458</td>
@@ -477,7 +477,7 @@ X_poly_train.head()
       <td>1.0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>1.350445</td>
       <td>1.850570</td>
       <td>1.427819</td>
@@ -501,7 +501,7 @@ X_poly_train.head()
       <td>1.0</td>
     </tr>
     <tr>
-      <th>3</th>
+      <td>3</td>
       <td>-0.511086</td>
       <td>-1.373413</td>
       <td>-1.711146</td>
@@ -525,7 +525,7 @@ X_poly_train.head()
       <td>0.0</td>
     </tr>
     <tr>
-      <th>4</th>
+      <td>4</td>
       <td>-0.743778</td>
       <td>0.114579</td>
       <td>-0.141664</td>
@@ -565,13 +565,13 @@ lr_poly.fit(X_poly_train, y_train)
 run_model(lr_poly, X_poly_train, X_poly_test, y_train, y_test)
 ```
 
-    Training R^2 : 0.6237424326763874
-    Training Root Mean Square Error 47.084553723292245
+    Training R^2 : 0.6237424326763868
+    Training Root Mean Square Error 47.084553723292274
     
     ----------------
     
-    Testing R^2 : 0.3688694444251718
-    Testing Root Mean Square Error 61.26777562691541
+    Testing R^2 : 0.3688694444251669
+    Testing Root Mean Square Error 61.26777562691565
 
 
 Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. The testing $R^{2}$ is worse than the simple model we fit previously! It's time to get rid of some features to see if this improves the model.
@@ -598,13 +598,13 @@ for thresh in threshold_ranges:
 ```
 
     0.0
-    Training R^2 : 0.623742432676387
-    Training Root Mean Square Error 47.08455372329227
+    Training R^2 : 0.6237424326763871
+    Training Root Mean Square Error 47.08455372329226
     
     ----------------
     
-    Testing R^2 : 0.36886944442517433
-    Testing Root Mean Square Error 61.26777562691529
+    Testing R^2 : 0.368869444425172
+    Testing Root Mean Square Error 61.2677756269154
     --------------------------------------------------------------------
     0.4
     Training R^2 : 0.6035018897144957
@@ -685,13 +685,13 @@ lr.fit(X_k_best_train ,y_train)
 run_model(lr,X_k_best_train,X_k_best_test,y_train,y_test)
 ```
 
-    Training R^2 : 0.48788560532499714
-    Training Root Mean Square Error 54.93123060353359
+    Training R^2 : 0.4947424871473227
+    Training Root Mean Square Error 54.56224442488476
     
     ----------------
     
-    Testing R^2 : 0.39166279490049805
-    Testing Root Mean Square Error 60.15125584031384
+    Testing R^2 : 0.41157350315844654
+    Testing Root Mean Square Error 59.15869978194653
 
 
 ## Wrapper methods
