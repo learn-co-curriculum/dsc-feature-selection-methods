@@ -1181,4 +1181,4 @@ There are no set steps someone should take in order to determine the optimal fea
 
 ## Summary
 
-This lesson formalized the different types of feature selection methods and introduced some new techniques to you. You learned about filter methods, wrapper methods, and embedded methods as well as advantages and disadvantages to both. Then you saw how these methods can be applied using classes from scikit-learn.
+This lesson formalized the different types of feature selection methods and introduced some new techniques to you. You learned about filter methods, wrapper methods, and embedded methods as well as their advantages and disadvantages. Then you saw how these methods can be applied using classes from scikit-learn.
