@@ -212,7 +212,7 @@ X_train, X_test, y_train, y_test = train_test_split(features, target, random_sta
 
 ```python
 # Create dummy variable for sex
-ohe = OneHotEncoder(drop='first', sparse=False)
+ohe = OneHotEncoder(drop='first', sparse_output=False)
 train_female = ohe.fit_transform(X_train[['SEX']]).flatten()
 test_female = ohe.transform(X_test[['SEX']]).flatten()
 ```
@@ -427,15 +427,13 @@ X_train_transformed
 
 
 
-We'll also use `PolynomialFeatures` to transform the data and create interactions and squared terms:
-
 
 ```python
 poly = PolynomialFeatures(degree=2, interaction_only=False, include_bias=False)
 X_poly_train = pd.DataFrame(poly.fit_transform(X_train_transformed),
-                            columns=poly.get_feature_names(X_train_transformed.columns))
+                            columns=poly.get_feature_names_out(X_train_transformed.columns))
 X_poly_test = pd.DataFrame(poly.transform(X_test_transformed),
-                           columns=poly.get_feature_names(X_test_transformed.columns))
+                           columns=poly.get_feature_names_out(X_test_transformed.columns))
 X_poly_train.head()
 ```
 
@@ -611,6 +609,8 @@ X_poly_train.head()
 
 
 
+We'll also use `PolynomialFeatures` to transform the data and create interactions and squared terms:
+
 As you can see, we now have 65 total columns! You can imagine that this model will greatly overfit to the data. Let's try it out with our training and test set.
 
 ### Establish Baseline Model Metrics
@@ -647,13 +647,13 @@ lr_poly.fit(X_poly_train, y_train)
 poly_r2, poly_rmse = run_model(lr_poly, X_poly_train, X_poly_test, y_train, y_test)
 ```
 
-    Training R^2: 0.6129986301260388
-    Training Root Mean Squared Error: 47.75205740477925
+    Training R^2: 0.6129415307185402
+    Training Root Mean Squared Error: 47.755580019724576
     
     ----------------
     
-    Testing R^2: 0.36357518602804706
-    Testing Root Mean Squared Error: 61.524212293921934
+    Testing R^2: 0.36569761287233904
+    Testing Root Mean Squared Error: 61.42153740771401
 
 
 Clearly, the model has fit very well to the training data, but it has fit to a lot of noise. It's time to get rid of some features to see if this improves the model.
@@ -684,18 +684,18 @@ print('Baseline R-Squared:', round(poly_r2, 2))
 print('Reduced R-Squared: ', round(reduced_r2, 2))
 ```
 
-    Training R^2: 0.612997102667146
-    Training Root Mean Squared Error: 47.75215164118052
+    Training R^2: 0.6129971026671458
+    Training Root Mean Squared Error: 47.75215164118053
     
     ----------------
     
-    Testing R^2: 0.36319440086194676
-    Testing Root Mean Squared Error: 61.54261509944549
+    Testing R^2: 0.36319440086194876
+    Testing Root Mean Squared Error: 61.5426150994454
     
     ----------------
     
     65 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
 
 
@@ -736,70 +736,70 @@ for thresh in threshold_ranges:
 
     Variance threshold: 0.44404268801979535
     58 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.36
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.35
     
     --------------------------------------------------------------------
     
     Variance threshold: 0.5991086615890968
     53 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
     
     --------------------------------------------------------------------
     
     Variance threshold: 0.7541746351583984
     53 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
     
     --------------------------------------------------------------------
     
     Variance threshold: 0.9092406087276999
     45 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.41
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.0643065822970015
     14 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.04
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.2193725558663029
     13 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.03
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.3744385294356045
     10 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.07
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.529504503004906
     9 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.09
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.6845704765742076
     8 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.09
     
     --------------------------------------------------------------------
     
     Variance threshold: 1.8396364501435092
     7 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.05
     
     --------------------------------------------------------------------
@@ -846,17 +846,17 @@ print('Reduced R-Squared: ', round(k_best_r2, 2))
 ```
 
     Training R^2: 0.5272198197441764
-    Training Root Mean Squared Error: 52.77952383154054
+    Training Root Mean Squared Error: 52.77952383154053
     
     ----------------
     
-    Testing R^2: 0.40576194869484816
-    Testing Root Mean Squared Error: 59.45012044763016
+    Testing R^2: 0.40576194869484805
+    Testing Root Mean Squared Error: 59.45012044763017
     
     ----------------
     
     10 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.41
 
 
@@ -882,13 +882,13 @@ print('Reduced R-Squared: ', round(k_best_r2, 2))
     
     ----------------
     
-    Testing R^2: 0.3853213585946893
+    Testing R^2: 0.3853213585946894
     Testing Root Mean Squared Error: 60.463957772103825
     
     ----------------
     
     10 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.39
 
 
@@ -914,43 +914,43 @@ for k in ks:
 ```
 
     1 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.22
     
     --------------------------------------------------------------------
     
     11 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.41
     
     --------------------------------------------------------------------
     
     21 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.38
     
     --------------------------------------------------------------------
     
     31 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.38
     
     --------------------------------------------------------------------
     
     41 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.38
     
     --------------------------------------------------------------------
     
     51 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
     
     --------------------------------------------------------------------
     
     61 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
     
     --------------------------------------------------------------------
@@ -1000,19 +1000,19 @@ print('Baseline R-Squared:', round(poly_r2, 2))
 print('Reduced R-Squared: ', round(rfe_r2, 2))
 ```
 
-    Training R^2: 0.5748196161478456
-    Training Root Mean Squared Error: 50.05211648955278
+    Training R^2: 0.533658199187885
+    Training Root Mean Squared Error: 52.4189128435064
     
     ----------------
     
-    Testing R^2: 0.37733344093605325
-    Testing Root Mean Squared Error: 60.85556248961369
+    Testing R^2: 0.3508109199706477
+    Testing Root Mean Squared Error: 62.138120492070954
     
     ----------------
     
     32 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.38
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.35
 
 
 We can also tune the number of features to select:
@@ -1037,43 +1037,43 @@ for n in feature_ns:
 ```
 
     1 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.35
     
     --------------------------------------------------------------------
     
     11 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.38
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.37
     
     --------------------------------------------------------------------
     
     21 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.34
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.32
     
     --------------------------------------------------------------------
     
     31 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.38
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.35
     
     --------------------------------------------------------------------
     
     41 out of 65 features used
-    Baseline R-Squared: 0.36
-    Reduced R-Squared:  0.36
+    Baseline R-Squared: 0.37
+    Reduced R-Squared:  0.35
     
     --------------------------------------------------------------------
     
     51 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.37
     
     --------------------------------------------------------------------
     
     61 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.36
     
     --------------------------------------------------------------------
@@ -1117,18 +1117,18 @@ print('Baseline R-Squared:', round(poly_r2, 2))
 print('Reduced R-Squared: ', round(rfe_r2, 2))
 ```
 
-    Training R^2: 0.5971249586549086
-    Training Root Mean Squared Error: 48.7215412627511
+    Training R^2: 0.5947409496105165
+    Training Root Mean Squared Error: 48.86548325059575
     
     ----------------
     
-    Testing R^2: 0.3505481539251326
-    Testing Root Mean Squared Error: 62.15069474572321
+    Testing R^2: 0.3510565846426025
+    Testing Root Mean Squared Error: 62.12636229566901
     
     ----------------
     
-    39 out of 65 features used
-    Baseline R-Squared: 0.36
+    42 out of 65 features used
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.35
 
 
@@ -1140,7 +1140,7 @@ To compare to our other methods, we will use lasso as the embedded method of fea
 
 
 ```python
-lasso = LassoCV(max_iter=100000, cv=15)
+lasso = LassoCV(max_iter=10000, cv=15)
 
 lasso.fit(X_poly_train, y_train)
 lasso_r2, lasso_rmse = run_model(lasso, X_poly_train, X_poly_test, y_train, y_test)
@@ -1164,7 +1164,7 @@ print('Reduced R-Squared: ', round(lasso_r2, 2))
     
     The optimal alpha for the lasso regression is:  1.0793942862389219
     39 out of 65 features used
-    Baseline R-Squared: 0.36
+    Baseline R-Squared: 0.37
     Reduced R-Squared:  0.42
 
 
