@@ -4,7 +4,7 @@
 
 In this lesson, you'll learn about the different techniques you can use to only use features that are most relevant to your model.
 
-### Objectives
+## Objectives
 
 You will be able to:
 
